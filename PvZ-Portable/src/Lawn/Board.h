@@ -255,6 +255,8 @@ public:
 
 	void							DrawHealthbar(Graphics* g, int posX, int posY, int width, int height, Color color, int hp, int maxHp);
 
+	void							AddPermanentCraters();
+
 	void							DisposeBoard();
 	int								CountSunBeingCollected();
 	void							DrawGameObjects(Graphics* g);

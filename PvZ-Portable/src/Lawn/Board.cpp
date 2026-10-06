@@ -19,10 +19,13 @@
  * along with PvZ-Portable. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "Lawn/Board.h"
 #include <time.h>
 #include <algorithm>
 #include <SDL.h>
 #include "ConstEnums.h"
+#include "Lawn/Widget/ContinueDialog.h"
+#include "Resources.h"
 #include "ZenGarden.h"
 #include "BoardInclude.h"
 #include "LawnCommon.h"
@@ -494,6 +497,23 @@ int Board::MakeRenderOrder(RenderLayer theRenderLayer, int theRow, int theLayerO
 	return theRow * static_cast<int>(RenderLayer::RENDER_LAYER_ROW_OFFSET) + theRenderLayer + theLayerOffset;
 }
 
+void Board::AddPermanentCraters()
+{
+	// Cover unplantable rows with craters
+	for (int y = 0; y < 6; y++)
+	{
+		if (y == 2 ||
+			(y == 5 && mBackground != BackgroundType::BACKGROUND_3_POOL && mBackground != BackgroundType::BACKGROUND_ZOMBIQUARIUM && mBackground != BackgroundType::BACKGROUND_4_FOG)
+			 || (y == 4 && mApp->mGameMode == GAMEMODE_CHALLENGE_ZEN_GARDEN))
+			continue;
+
+		for (int x = 0; x < 9; x++)
+		{
+			AddACrater(x, y)->mGridItemCounter = 999999999;
+		}
+	}
+}
+
 GridItem* Board::AddALadder(int theGridX, int theGridY)
 {
 	GridItem* aLadder = mGridItems.DataArrayAlloc();
@@ -832,10 +852,11 @@ void Board::LoadBackgroundImages()
 	{
 	case BackgroundType::BACKGROUND_1_DAY:
 		mLoadedResourceNames.push_back("DelayLoad_Background1");
-		if ((mApp->IsAdventureMode() && mLevel <= 4) || mApp->mGameMode == GameMode::GAMEMODE_CHALLENGE_RESODDED)
+		/*if ((mApp->IsAdventureMode() && mLevel <= 4) || mApp->mGameMode == GameMode::GAMEMODE_CHALLENGE_RESODDED)
 		{
 			mLoadedResourceNames.push_back("DelayLoad_BackgroundUnsodded");
-		}
+		}*/
+		mLoadedResourceNames.push_back("DelayLoad_BackgroundUnsodded");
 		break;
 
 	case BackgroundType::BACKGROUND_2_NIGHT:
@@ -1029,7 +1050,7 @@ void Board::PickBackground()
 	}
 	LoadBackgroundImages();
 
-	if (mBackground == BackgroundType::BACKGROUND_1_DAY || mBackground == BackgroundType::BACKGROUND_GREENHOUSE || mBackground == BackgroundType::BACKGROUND_TREEOFWISDOM)
+	/*if (mBackground == BackgroundType::BACKGROUND_1_DAY || mBackground == BackgroundType::BACKGROUND_GREENHOUSE || mBackground == BackgroundType::BACKGROUND_TREEOFWISDOM)
 	{
 		mPlantRow[0] = PlantRowType::PLANTROW_NORMAL;
 		mPlantRow[1] = PlantRowType::PLANTROW_NORMAL;
@@ -1089,7 +1110,26 @@ void Board::PickBackground()
 	else
 	{
 		PVZP_ASSERT(false);
+	}*/
+
+	mPlantRow[0] = PlantRowType::PLANTROW_DIRT;
+	mPlantRow[1] = PlantRowType::PLANTROW_DIRT;
+	mPlantRow[3] = PlantRowType::PLANTROW_DIRT;
+	mPlantRow[4] = PlantRowType::PLANTROW_DIRT;
+	mPlantRow[5] = PlantRowType::PLANTROW_DIRT;
+
+	if (mBackground == BackgroundType::BACKGROUND_3_POOL || mBackground == BackgroundType::BACKGROUND_ZOMBIQUARIUM || mBackground == BackgroundType::BACKGROUND_4_FOG)
+	{
+		mPlantRow[2] = PlantRowType::PLANTROW_POOL;
 	}
+	else
+	{
+		mPlantRow[2] = PlantRowType::PLANTROW_NORMAL;
+	}
+
+	if (mBackground != BackgroundType::BACKGROUND_1_DAY)
+		AddPermanentCraters();
+
 
 	for (int x = 0; x < MAX_GRID_SIZE_X; x++)
 	{
@@ -2248,7 +2288,7 @@ void Board::GetPlantsOnLawn(int theGridX, int theGridY, PlantsOnLawn* thePlantOn
 		}
 		else
 		{
-			PVZP_ASSERT(!thePlantOnLawn->mNormalPlant);
+			PVZP_ASSERT(!thePlantOnLawn->mNormalPlant || mApp->IsIZombieLevel());
 			thePlantOnLawn->mNormalPlant = aPlant;
 		}
 	}
@@ -2564,10 +2604,11 @@ bool Board::RowCanHaveZombieType(int theRow, ZombieType theZombieType)
 	}
 	if (mPlantRow[theRow] == PlantRowType::PLANTROW_POOL)
 	{
-		if (aCurrentWave < 5 && !IsZombieTypePoolOnly(theZombieType))
+		/*if (aCurrentWave < 5 && !IsZombieTypePoolOnly(theZombieType))
 		{
 			return false;
-		}
+		}*/
+		return true;
 	}
 	else if (IsZombieTypePoolOnly(theZombieType))
 	{
@@ -2594,7 +2635,8 @@ bool Board::RowCanHaveZombieType(int theRow, ZombieType theZombieType)
 
 int Board::PickRowForNewZombie(ZombieType theZombieType)
 {
-	// A rake that is attracting a zombie pulls the new zombie into its row
+	return 2;
+	/*// A rake that is attracting a zombie pulls the new zombie into its row
 	GridItem* aRake = GetRake();
 	if (aRake && aRake->mGridItemState == GridItemState::GRIDITEM_STATE_RAKE_ATTRACTING && RowCanHaveZombieType(aRake->mGridY, theZombieType))
 	{
@@ -2640,7 +2682,7 @@ int Board::PickRowForNewZombie(ZombieType theZombieType)
 			}
 		}
 	}
-	return PvzpPickFromSmoothArray(mRowPickingArray, MAX_GRID_SIZE_Y);
+	return PvzpPickFromSmoothArray(mRowPickingArray, MAX_GRID_SIZE_Y);*/
 }
 
 bool Board::CanAddBobSled()
@@ -4832,7 +4874,7 @@ void Board::SetupBungeeDrop(BungeeDropGrid* theBungeeDropGrid)
 		{
 			int aCount = theBungeeDropGrid->mGridArrayCount;
 			theBungeeDropGrid->mGridArray[aCount].mX = aGridX;
-			theBungeeDropGrid->mGridArray[aCount].mY = aGridY;
+			theBungeeDropGrid->mGridArray[aCount].mY = 2;
 			theBungeeDropGrid->mGridArray[aCount].mWeight = 10000;
 			theBungeeDropGrid->mGridArrayCount++;
 			PVZP_ASSERT(static_cast<size_t>(theBungeeDropGrid->mGridArrayCount) <= LENGTH(theBungeeDropGrid->mGridArray));
@@ -5943,14 +5985,14 @@ void Board::DrawBackdrop(Graphics* g)
 	default:											PVZP_ASSERT(false);											break;
 	}
 
-	if (mLevel == 1 && mApp->IsFirstTimeAdventureMode())
+	if (/*mLevel == 1 && mApp->IsFirstTimeAdventureMode()*/ mBackground == BACKGROUND_1_DAY)
 	{
 		g->DrawImage(Sexy::IMAGE_BACKGROUND1UNSODDED, -BOARD_OFFSET, 0);
 		int aWidth = PvzpAnimateCurve(0, 1000, mSodPosition, 0, Sexy::IMAGE_SOD1ROW->GetWidth(), PvzpCurves::CURVE_LINEAR);
 		Rect aSrcRect(0, 0, aWidth, Sexy::IMAGE_SOD1ROW->GetHeight());
 		g->DrawImage(Sexy::IMAGE_SOD1ROW, 239 - BOARD_OFFSET, 265, aSrcRect);
 	}
-	else if (((mLevel == 2 || mLevel == 3) && mApp->IsFirstTimeAdventureMode()) || mApp->mGameMode == GameMode::GAMEMODE_CHALLENGE_RESODDED)
+	/*else if (((mLevel == 2 || mLevel == 3) && mApp->IsFirstTimeAdventureMode()) || mApp->mGameMode == GameMode::GAMEMODE_CHALLENGE_RESODDED)
 	{
 		g->DrawImage(Sexy::IMAGE_BACKGROUND1UNSODDED, -BOARD_OFFSET, 0);
 		g->DrawImage(Sexy::IMAGE_SOD1ROW, 239 - BOARD_OFFSET, 265);
@@ -5965,7 +6007,7 @@ void Board::DrawBackdrop(Graphics* g)
 		int aWidth = PvzpAnimateCurve(0, 1000, mSodPosition, 0, 773, PvzpCurves::CURVE_LINEAR);
 		Rect aSrcRect(232, 0, aWidth, Sexy::IMAGE_BACKGROUND1->GetHeight());
 		g->DrawImage(Sexy::IMAGE_BACKGROUND1, 232 - BOARD_OFFSET, 0, aSrcRect);
-	}
+	}*/
 	else if (aBgImage)
 	{
 		if (aBgImage == Sexy::IMAGE_BACKGROUND_MUSHROOMGARDEN || aBgImage == Sexy::IMAGE_BACKGROUND_GREENHOUSE || aBgImage == Sexy::IMAGE_AQUARIUM1)
@@ -7891,7 +7933,7 @@ void Board::KeyChar(char theChar)
 			}
 		}
 	}
-	else if (theChar == '\"' && mShowShovel)
+	if (theChar == 'q' && mShowShovel)
 	{
 		if (mCursorObject->mCursorType != CursorType::CURSOR_TYPE_SHOVEL)
 		{
@@ -8322,7 +8364,7 @@ void Board::KeyChar(char theChar)
 		}
 	}
 
-	if (theChar == 'q')
+	if (theChar == 'Q')
 	{
 		if (mApp->IsSurvivalEndless(mApp->mGameMode))
 		{

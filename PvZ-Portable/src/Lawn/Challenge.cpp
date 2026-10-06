@@ -58,7 +58,7 @@
 constexpr const int BEGHOULED_WINNING_SCORE = 75;
 constexpr const int SLOT_MACHINE_WINNING_SCORE = 2000;
 constexpr const int ZOMBIQUARIUM_WINNING_SCORE = 1000;
-constexpr const int I_ZOMBIE_WINNING_SCORE = 5;
+constexpr const int I_ZOMBIE_WINNING_SCORE = 1; // 5
 constexpr const int MAX_PORTALS = 4;
 constexpr const int MAX_SQUIRRELS = 7;
 constexpr const int MAX_SCARY_POTS = 54;
@@ -421,9 +421,9 @@ void Challenge::InitLevel()
 	}
 	if (mApp->IsFirstTimeAdventureMode() && mBoard->mLevel == 5)
 	{
-		mBoard->NewPlant(5, 1, SEED_PEASHOOTER, SEED_NONE);
+		mBoard->NewPlant(5, 2, SEED_PEASHOOTER, SEED_NONE);
 		mBoard->NewPlant(7, 2, SEED_PEASHOOTER, SEED_NONE);
-		mBoard->NewPlant(6, 3, SEED_PEASHOOTER, SEED_NONE);
+		mBoard->NewPlant(6, 2, SEED_PEASHOOTER, SEED_NONE);
 	}
 	if (mApp->mGameMode == GAMEMODE_CHALLENGE_BEGHOULED_TWIST)
 	{
@@ -1258,6 +1258,7 @@ void Challenge::AdvanceCrazyDaveDialog()
 		ScaryPotterPopulate();
 		mApp->PlayFoley(FOLEY_PLANT);
 		mBoard->PlaceRake();
+		mBoard->AddPermanentCraters();
 	}
 }
 
@@ -3742,9 +3743,9 @@ void Challenge::ScaryPotterPlacePot(ScaryPotType theScaryPotType, ZombieType the
 		aScaryPot->mGridItemType = GRIDITEM_SCARY_POT;
 		aScaryPot->mGridItemState = GRIDITEM_STATE_SCARY_POT_QUESTION;
 		aScaryPot->mGridX = aGrid->mX;
-		aScaryPot->mGridY = aGrid->mY;
+		aScaryPot->mGridY = 2;
 		aGrid->mWeight = 0;
-		aScaryPot->mRenderOrder = mBoard->MakeRenderOrder(RENDER_LAYER_PLANT, aGrid->mY, 0);
+		aScaryPot->mRenderOrder = mBoard->MakeRenderOrder(RENDER_LAYER_PLANT, 2, 0);
 		aScaryPot->mZombieType = theZombieType; aScaryPot->mSeedType = theSeedType; aScaryPot->mScaryPotType = aPotType;
 		if (aPotType == SCARYPOT_SUN)
 		{
@@ -4360,10 +4361,11 @@ void Challenge::IZombieSetupPlant(Plant* thePlant)
 
 void Challenge::IZombiePlacePlantInSquare(SeedType theSeedType, int theGridX, int theGridY)
 {
-	if (mBoard->CanPlantAt(theGridX, theGridY, theSeedType) == PLANTING_OK)
+	IZombieSetupPlant(mBoard->NewPlant(theGridX, 2, theSeedType));
+	/*if (mBoard->CanPlantAt(theGridX, theGridY, theSeedType) == PLANTING_OK)
 	{
 		IZombieSetupPlant(mBoard->NewPlant(theGridX, theGridY, theSeedType));
-	}
+	}*/
 }
 
 void Challenge::IZombiePlacePlants(SeedType theSeedType, int theCount, int theGridY)
@@ -4401,13 +4403,13 @@ void Challenge::IZombiePlacePlants(SeedType theSeedType, int theCount, int theGr
 		// In each row, collect the columns left of the red line
 		for (int aCol = 0; aCol < aColumns; aCol++)
 		{
-			if (mBoard->CanPlantAt(aCol, aRow, theSeedType) == PLANTING_OK)
+			if (/*mBoard->CanPlantAt(aCol, aRow, theSeedType) == PLANTING_OK*/true)
 			{
 				// Wall-nuts and torchwoods only appear in the rightmost 3 columns
 				if ((theSeedType != SEED_WALLNUT && theSeedType != SEED_TORCHWOOD) || aColumns - aCol <= 3)
 				{
 					aGridArray[aGridArrayCount].mX = aCol;
-					aGridArray[aGridArrayCount].mY = aRow;
+					aGridArray[aGridArrayCount].mY = 2; // aRow
 					aGridArray[aGridArrayCount].mWeight = 1;
 					aGridArrayCount++;
 				}
@@ -4428,7 +4430,7 @@ void Challenge::IZombiePlacePlants(SeedType theSeedType, int theCount, int theGr
 void Challenge::IZombieInitLevel()
 {
 	mChallengeScore = 0;
-	for (int aRow = 0; aRow < I_ZOMBIE_WINNING_SCORE; aRow++)
+	/*for (int aRow = 0; aRow < I_ZOMBIE_WINNING_SCORE; aRow++)
 	{
 		GridItem* aBrain = mBoard->mGridItems.DataArrayAlloc();
 		aBrain->mGridItemType = GRIDITEM_IZOMBIE_BRAIN;
@@ -4438,22 +4440,28 @@ void Challenge::IZombieInitLevel()
 		aBrain->mGridItemCounter = 70;
 		aBrain->mPosX = mBoard->GridToPixelX(0, aRow) - 40;
 		aBrain->mPosY = mBoard->GridToPixelY(0, aRow) + 40;
-	}
+	}*/
+
+	GridItem* aBrain = mBoard->mGridItems.DataArrayAlloc();
+	aBrain->mGridItemType = GRIDITEM_IZOMBIE_BRAIN;
+	aBrain->mGridX = 0;
+	aBrain->mGridY = 2;
+	aBrain->mRenderOrder = Board::MakeRenderOrder(RENDER_LAYER_PLANT, 2, 0);
+	aBrain->mGridItemCounter = 70;
+	aBrain->mPosX = mBoard->GridToPixelX(0, 2) - 40;
+	aBrain->mPosY = mBoard->GridToPixelY(0, 2) + 40;
 
 	switch (mApp->mGameMode)
 	{
 	case GAMEMODE_PUZZLE_I_ZOMBIE_1:
-		IZombiePlacePlantInSquare(SEED_SUNFLOWER, 3, 2);
-		IZombiePlacePlantInSquare(SEED_SUNFLOWER, 3, 3);
 		IZombiePlacePlants(SEED_SUNFLOWER, 7, -1);
 		IZombiePlacePlants(SEED_SQUASH, 3, -1);
 		IZombiePlacePlants(SEED_PEASHOOTER, 6, -1);
 		IZombiePlacePlants(SEED_SNOWPEA, 2, -1);
+		IZombiePlacePlantInSquare(SEED_SUNFLOWER, 3, 2);
+		IZombiePlacePlantInSquare(SEED_SUNFLOWER, 3, 3);
 		break;
 	case GAMEMODE_PUZZLE_I_ZOMBIE_2:
-		IZombiePlacePlantInSquare(SEED_SPIKEWEED, 3, 0);
-		IZombiePlacePlantInSquare(SEED_SUNFLOWER, 2, 0);
-		IZombiePlacePlantInSquare(SEED_SUNFLOWER, 3, 3);
 		IZombiePlacePlants(SEED_SPIKEWEED, 1, 0);
 		IZombiePlacePlants(SEED_PEASHOOTER, 1, 0);
 		IZombiePlacePlants(SEED_SNOWPEA, 2, 3);
@@ -4462,19 +4470,29 @@ void Challenge::IZombieInitLevel()
 		IZombiePlacePlants(SEED_SPIKEWEED, 2, -1);
 		IZombiePlacePlants(SEED_SNOWPEA, 2, -1);
 		IZombiePlacePlants(SEED_PEASHOOTER, 4, -1);
+		IZombiePlacePlantInSquare(SEED_SPIKEWEED, 3, 0);
+		IZombiePlacePlantInSquare(SEED_SUNFLOWER, 2, 0);
+		IZombiePlacePlantInSquare(SEED_SUNFLOWER, 3, 3);
 		break;
 	case GAMEMODE_PUZZLE_I_ZOMBIE_3:
+		IZombiePlacePlants(SEED_TORCHWOOD, 2, -1);
+		IZombiePlacePlants(SEED_SUNFLOWER, 5, -1);
+		IZombiePlacePlants(SEED_PEASHOOTER, 7, -1);
+		IZombiePlacePlants(SEED_SPLITPEA, 1, -1);
 		IZombiePlacePlantInSquare(SEED_POTATOMINE, 3, 0);
 		IZombiePlacePlantInSquare(SEED_SUNFLOWER, 2, 0);
 		IZombiePlacePlantInSquare(SEED_POTATOMINE, 2, 2);
 		IZombiePlacePlantInSquare(SEED_SUNFLOWER, 2, 4);
 		IZombiePlacePlantInSquare(SEED_TORCHWOOD, 3, 3);
-		IZombiePlacePlants(SEED_TORCHWOOD, 2, -1);
-		IZombiePlacePlants(SEED_SUNFLOWER, 5, -1);
-		IZombiePlacePlants(SEED_PEASHOOTER, 7, -1);
-		IZombiePlacePlants(SEED_SPLITPEA, 1, -1);
 		break;
 	case GAMEMODE_PUZZLE_I_ZOMBIE_4:
+		IZombiePlacePlants(SEED_PEASHOOTER, 1, 0);
+		IZombiePlacePlants(SEED_SNOWPEA, 1, 1);
+		IZombiePlacePlants(SEED_FUMESHROOM, 2, 2);
+		IZombiePlacePlants(SEED_SNOWPEA, 1, 3);
+		IZombiePlacePlants(SEED_PEASHOOTER, 1, 4);
+		IZombiePlacePlants(SEED_PEASHOOTER, 2, -1);
+		IZombiePlacePlants(SEED_SUNFLOWER, 4, -1);
 		IZombiePlacePlantInSquare(SEED_WALLNUT, 3, 0);
 		IZombiePlacePlantInSquare(SEED_SUNFLOWER, 2, 0);
 		IZombiePlacePlantInSquare(SEED_WALLNUT, 3, 1);
@@ -4483,27 +4501,18 @@ void Challenge::IZombieInitLevel()
 		IZombiePlacePlantInSquare(SEED_WALLNUT, 3, 3);
 		IZombiePlacePlantInSquare(SEED_WALLNUT, 3, 4);
 		IZombiePlacePlantInSquare(SEED_SUNFLOWER, 2, 4);
-		IZombiePlacePlants(SEED_PEASHOOTER, 1, 0);
-		IZombiePlacePlants(SEED_SNOWPEA, 1, 1);
-		IZombiePlacePlants(SEED_FUMESHROOM, 2, 2);
-		IZombiePlacePlants(SEED_SNOWPEA, 1, 3);
-		IZombiePlacePlants(SEED_PEASHOOTER, 1, 4);
-		IZombiePlacePlants(SEED_PEASHOOTER, 2, -1);
-		IZombiePlacePlants(SEED_SUNFLOWER, 4, -1);
 		break;
 	case GAMEMODE_PUZZLE_I_ZOMBIE_5:
-		IZombiePlacePlantInSquare(SEED_SUNFLOWER, 3, 2);
-		IZombiePlacePlantInSquare(SEED_SUNFLOWER, 3, 3);
 		IZombiePlacePlants(SEED_CACTUS, 1, 1);
 		IZombiePlacePlants(SEED_CACTUS, 1, 4);
 		IZombiePlacePlants(SEED_MAGNETSHROOM, 1, -1);
 		IZombiePlacePlants(SEED_SUNFLOWER, 5, -1);
 		IZombiePlacePlants(SEED_PEASHOOTER, 8, -1);
 		IZombiePlacePlants(SEED_SNOWPEA, 2, -1);
+		IZombiePlacePlantInSquare(SEED_SUNFLOWER, 3, 2);
+		IZombiePlacePlantInSquare(SEED_SUNFLOWER, 3, 3);
 		break;
 	case GAMEMODE_PUZZLE_I_ZOMBIE_6:
-		IZombiePlacePlantInSquare(SEED_GARLIC, 4, 1);
-		IZombiePlacePlantInSquare(SEED_GARLIC, 4, 3);
 		IZombiePlacePlants(SEED_SUNFLOWER, 3, 1);
 		IZombiePlacePlants(SEED_SUNFLOWER, 3, 3);
 		IZombiePlacePlants(SEED_TORCHWOOD, 2, -1);
@@ -4513,13 +4522,15 @@ void Challenge::IZombieInitLevel()
 		IZombiePlacePlants(SEED_PEASHOOTER, 5, -1);
 		IZombiePlacePlants(SEED_SQUASH, 2, -1);
 		IZombiePlacePlants(SEED_KERNELPULT, 2, -1);
+		IZombiePlacePlantInSquare(SEED_GARLIC, 4, 1);
+		IZombiePlacePlantInSquare(SEED_GARLIC, 4, 3);
 		break;
 	case GAMEMODE_PUZZLE_I_ZOMBIE_7:
-		IZombiePlacePlantInSquare(SEED_SUNFLOWER, 4, 2);
-		IZombiePlacePlantInSquare(SEED_SUNFLOWER, 4, 4);
 		IZombiePlacePlants(SEED_SUNFLOWER, 6, -1);
 		IZombiePlacePlants(SEED_POTATOMINE, 9, -1);
 		IZombiePlacePlants(SEED_CHOMPER, 8, -1);
+		IZombiePlacePlantInSquare(SEED_SUNFLOWER, 4, 2);
+		IZombiePlacePlantInSquare(SEED_SUNFLOWER, 4, 4);
 		break;
 	case GAMEMODE_PUZZLE_I_ZOMBIE_8:
 		IZombiePlacePlants(SEED_WALLNUT, 3, -1);
@@ -4530,8 +4541,6 @@ void Challenge::IZombieInitLevel()
 		IZombiePlacePlants(SEED_SUNFLOWER, 8, -1);
 		break;
 	case GAMEMODE_PUZZLE_I_ZOMBIE_9:
-		IZombiePlacePlantInSquare(SEED_TALLNUT, 5, 1);
-		IZombiePlacePlantInSquare(SEED_TORCHWOOD, 5, 3);
 		IZombiePlacePlants(SEED_POTATOMINE, 4, 0);
 		IZombiePlacePlants(SEED_SUNFLOWER, 2, 0);
 		IZombiePlacePlants(SEED_SUNFLOWER, 2, 1);
@@ -4549,6 +4558,8 @@ void Challenge::IZombieInitLevel()
 		IZombiePlacePlants(SEED_STARFRUIT, 1, 4);
 		IZombiePlacePlants(SEED_SPLITPEA, 1, 4);
 		IZombiePlacePlants(SEED_MAGNETSHROOM, 1, 4);
+		IZombiePlacePlantInSquare(SEED_TALLNUT, 5, 1);
+		IZombiePlacePlantInSquare(SEED_TORCHWOOD, 5, 3);
 		break;
 	case GAMEMODE_PUZZLE_I_ZOMBIE_ENDLESS:
 	{

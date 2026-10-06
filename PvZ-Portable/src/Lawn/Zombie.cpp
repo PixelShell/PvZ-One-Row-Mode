@@ -2808,8 +2808,8 @@ void Zombie::UpdateZombieDigger()
 
 ZombieID Zombie::SummonBackupDancer(int theRow, int thePosX)
 {
-	if (!mBoard->RowCanHaveZombieType(theRow, ZombieType::ZOMBIE_BACKUP_DANCER))
-		return ZombieID::ZOMBIEID_NULL;
+	/*if (!mBoard->RowCanHaveZombieType(theRow, ZombieType::ZOMBIE_BACKUP_DANCER))
+		return ZombieID::ZOMBIEID_NULL;*/
 
 	Zombie* aZombie = mBoard->AddZombie(ZombieType::ZOMBIE_BACKUP_DANCER, mFromWave);
 	if (aZombie == nullptr)
@@ -8276,7 +8276,9 @@ bool Zombie::IsZombotany(ZombieType theZombieType)
 
 bool Zombie::ZombieTypeCanGoInPool(ZombieType theZombieType)
 {
-	return
+	return true;
+
+	/*return
 		theZombieType == ZombieType::ZOMBIE_NORMAL ||
 		theZombieType == ZombieType::ZOMBIE_TRAFFIC_CONE ||
 		theZombieType == ZombieType::ZOMBIE_PAIL ||
@@ -8287,7 +8289,7 @@ bool Zombie::ZombieTypeCanGoInPool(ZombieType theZombieType)
 		theZombieType == ZombieType::ZOMBIE_WALLNUT_HEAD ||
 		theZombieType == ZombieType::ZOMBIE_JALAPENO_HEAD ||
 		theZombieType == ZombieType::ZOMBIE_GATLING_HEAD ||
-		theZombieType == ZombieType::ZOMBIE_TALLNUT_HEAD;
+		theZombieType == ZombieType::ZOMBIE_TALLNUT_HEAD;*/
 }
 
 bool Zombie::ZombieTypeCanGoOnHighGround(ZombieType theZombieType)

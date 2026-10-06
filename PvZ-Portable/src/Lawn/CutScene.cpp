@@ -1211,25 +1211,25 @@ void CutScene::AnimateBoard()
 		if (mCutsceneTime == aTimeRollSodStart)
 		{
 			mApp->PlayFoley(FoleyType::FOLEY_DIGGER);
-			if (mBoard->mLevel == 1)
+			if (mBoard->mLevel >= 1 && mBoard->mLevel <= 10)
 			{
 				mApp->AddReanimation(0, 0, Board::MakeRenderOrder(RenderLayer::RENDER_LAYER_TOP, 0, 0), ReanimationType::REANIM_SODROLL);
 				mApp->AddPvzpParticle(35, 348, Board::MakeRenderOrder(RenderLayer::RENDER_LAYER_TOP, 0, 1), ParticleEffect::PARTICLE_SOD_ROLL);
 			}
-			else if (mBoard->mLevel == 2)
-			{
+			/*else if (mBoard->mLevel == 2)
+			{ 
 				mApp->AddReanimation(0, -102, Board::MakeRenderOrder(RenderLayer::RENDER_LAYER_TOP, 0, 0), ReanimationType::REANIM_SODROLL);
 				mApp->AddReanimation(0, 111, Board::MakeRenderOrder(RenderLayer::RENDER_LAYER_TOP, 0, 0), ReanimationType::REANIM_SODROLL);
 				mApp->AddPvzpParticle(35, 246, Board::MakeRenderOrder(RenderLayer::RENDER_LAYER_TOP, 0, 1), ParticleEffect::PARTICLE_SOD_ROLL);
 				mApp->AddPvzpParticle(35, 459, Board::MakeRenderOrder(RenderLayer::RENDER_LAYER_TOP, 0, 1), ParticleEffect::PARTICLE_SOD_ROLL);
 			}
-			else if (mBoard->mLevel == 4)
+			else if (mBoard->mLevel == 4 )
 			{
 				mApp->AddReanimation(-3, -198, Board::MakeRenderOrder(RenderLayer::RENDER_LAYER_TOP, 0, 0), ReanimationType::REANIM_SODROLL);
 				mApp->AddReanimation(-3, 203, Board::MakeRenderOrder(RenderLayer::RENDER_LAYER_TOP, 0, 0), ReanimationType::REANIM_SODROLL);
 				mApp->AddPvzpParticle(32, 150, Board::MakeRenderOrder(RenderLayer::RENDER_LAYER_TOP, 0, 1), ParticleEffect::PARTICLE_SOD_ROLL);
 				mApp->AddPvzpParticle(32, 511, Board::MakeRenderOrder(RenderLayer::RENDER_LAYER_TOP, 0, 1), ParticleEffect::PARTICLE_SOD_ROLL);
-			}
+			}*/
 		}
 
 		if (mCutsceneTime == aTimeRollSodEnd)
