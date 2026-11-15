@@ -823,14 +823,14 @@ void Plant::LaunchThreepeater()
 	int rowBelow = mRow + 1;
 
 	if ((FindTargetZombie(mRow, PlantWeapon::WEAPON_PRIMARY)) ||
-		(mBoard->RowCanHaveZombies(rowAbove) && FindTargetZombie(rowAbove, PlantWeapon::WEAPON_PRIMARY)) ||
-		(mBoard->RowCanHaveZombies(rowBelow) && FindTargetZombie(rowBelow, PlantWeapon::WEAPON_PRIMARY)))
+		(/*mBoard->RowCanHaveZombies(rowAbove) && */FindTargetZombie(rowAbove, PlantWeapon::WEAPON_PRIMARY)) ||
+		(/*mBoard->RowCanHaveZombies(rowBelow) &&*/ FindTargetZombie(rowBelow, PlantWeapon::WEAPON_PRIMARY)))
 	{
 		Reanimation* aHeadReanim1 = mApp->ReanimationGet(mHeadReanimID);
 		Reanimation* aHeadReanim2 = mApp->ReanimationGet(mHeadReanimID2);
 		Reanimation* aHeadReanim3 = mApp->ReanimationGet(mHeadReanimID3);
 
-		if (mBoard->RowCanHaveZombies(rowBelow))
+		if (/*mBoard->RowCanHaveZombies(rowBelow)*/ true)
 		{
 			aHeadReanim1->StartBlend(10);
 			aHeadReanim1->mLoopType = ReanimLoopType::REANIM_PLAY_ONCE_AND_HOLD;
@@ -843,7 +843,7 @@ void Plant::LaunchThreepeater()
 		aHeadReanim2->mAnimRate = 20.0f;
 		aHeadReanim2->SetFramesForLayer("anim_shooting2");
 
-		if (mBoard->RowCanHaveZombies(rowAbove))
+		if (/*mBoard->RowCanHaveZombies(rowAbove)*/ true)
 		{
 			aHeadReanim3->StartBlend(10);
 			aHeadReanim3->mLoopType = ReanimLoopType::REANIM_PLAY_ONCE_AND_HOLD;

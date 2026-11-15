@@ -23,6 +23,7 @@ protected:
         ExtraOptionsDialog_AutoCollect,
         ExtraOptionsDialog_Healthbar,
         ExtraOptionsDialog_Back,
+        ExtraOptionsDialog_Money,
     };
 
 public:
@@ -31,6 +32,7 @@ public:
     Sexy::Checkbox*			mAutoCollectionCheckbox;
     Sexy::Checkbox*			mHealthbarCheckbox;
     NewLawnButton*		    mBackButton;
+    LawnStoneButton*		mMoneyButton;
     bool                    mFromGameSelector;
 public:
     ExtraOptionsDialog(LawnApp* theApp, bool theFromGameSelector);

@@ -1643,7 +1643,7 @@ void Board::PlaceRake()
 			return;
 	}
 
-	int aPickCount = 0;
+	/*int aPickCount = 0;
 	PvzpWeightedArray aPickArray[MAX_GRID_SIZE_Y];
 	for (int aRow = 0; aRow < MAX_GRID_SIZE_Y; aRow++)
 	{
@@ -1655,9 +1655,10 @@ void Board::PlaceRake()
 		}
 	}
 	if (aPickCount == 0)
-		return;
+		return;*/
 
-	int aGridY = PvzpPickFromWeightedArray(aPickArray, aPickCount);
+	//int aGridY = PvzpPickFromWeightedArray(aPickArray, aPickCount);
+	int aGridY = 2;
 	mApp->mPlayerInfo->mPurchases[StoreItem::STORE_ITEM_RAKE]--;
 	GridItem* aRake = mGridItems.DataArrayAlloc();
 	aRake->mGridItemType = GridItemType::GRIDITEM_RAKE;
@@ -2635,7 +2636,49 @@ bool Board::RowCanHaveZombieType(int theRow, ZombieType theZombieType)
 
 int Board::PickRowForNewZombie(ZombieType theZombieType)
 {
-	return 2;
+	if (mApp->mGameMode != GAMEMODE_CHALLENGE_RESODDED)
+		return 2;
+	else
+	{
+		for (int aRow = 0; aRow < MAX_GRID_SIZE_Y; aRow++)
+		{
+			if (!RowCanHaveZombieType(aRow, theZombieType))
+			{
+				mRowPickingArray[aRow].mWeight = 0;
+			}
+			else if (mApp->mGameMode == GameMode::GAMEMODE_CHALLENGE_PORTAL_COMBAT)
+			{
+				mRowPickingArray[aRow].mWeight = mChallenge->PortalCombatRowSpawnWeight(aRow);
+			}
+			else if (mApp->mGameMode == GameMode::GAMEMODE_CHALLENGE_INVISIGHOUL && mCurrentWave <= 3 && aRow == 5)
+			{
+				mRowPickingArray[aRow].mWeight = 0;
+			}
+			// lawn mower loss protection
+			else
+			{
+				int aWavesMowered = mCurrentWave - mWaveRowGotLawnMowered[aRow];
+				if (mApp->IsContinuousChallenge() && mCurrentWave == mNumWaves - 1)
+				{
+					aWavesMowered = 100;
+				}
+				
+				if (aWavesMowered <= 1)
+				{
+					mRowPickingArray[aRow].mWeight = 0.01f;
+				}
+				else if (aWavesMowered <= 2)
+				{
+					mRowPickingArray[aRow].mWeight = 0.5f;
+				}
+				else
+				{
+					mRowPickingArray[aRow].mWeight = 1.0f;
+				}
+			}
+	}
+	return PvzpPickFromSmoothArray(mRowPickingArray, MAX_GRID_SIZE_Y);
+	}
 	/*// A rake that is attracting a zombie pulls the new zombie into its row
 	GridItem* aRake = GetRake();
 	if (aRake && aRake->mGridItemState == GridItemState::GRIDITEM_STATE_RAKE_ATTRACTING && RowCanHaveZombieType(aRake->mGridY, theZombieType))
@@ -3949,17 +3992,17 @@ void Board::MouseDownWithPlant(int x, int y, int theClickCount)
 		PVZP_ASSERT(false);
 	}
 
-	// Column levels plant a whole column at once
+	// Column levels plant a whole column at once (NOW IT'S A WHOLE ROW)
 	if (mApp->mGameMode == GameMode::GAMEMODE_CHALLENGE_COLUMN)
 	{
-		for (int aRow = 0; aRow < MAX_GRID_SIZE_Y; aRow++)
+		for (int aCol = 0; aCol < MAX_GRID_SIZE_X; aCol++)
 		{
-			if (aRow == aGridY || CanPlantAt(aGridX, aRow, aPlantingSeedType) != PlantingReason::PLANTING_OK)
+			if (aCol == aGridX || CanPlantAt(aCol, aGridY, aPlantingSeedType) != PlantingReason::PLANTING_OK)
 				continue;
 
 			if (aPlantingSeedType == SeedType::SEED_WALLNUT || aPlantingSeedType == SeedType::SEED_TALLNUT)
 			{
-				aNormalPlant = GetTopPlantAt(aGridX, aRow, PlantPriority::TOPPLANT_ONLY_NORMAL_POSITION);
+				aNormalPlant = GetTopPlantAt(aCol, aGridY, PlantPriority::TOPPLANT_ONLY_NORMAL_POSITION);
 				if (aNormalPlant && aNormalPlant->mSeedType == aPlantingSeedType)
 				{
 					aNormalPlant->Die();
@@ -3967,13 +4010,13 @@ void Board::MouseDownWithPlant(int x, int y, int theClickCount)
 			}
 			if (aPlantingSeedType == SeedType::SEED_PUMPKINSHELL)
 			{
-				aPumpkinPlant = GetTopPlantAt(aGridX, aRow, PlantPriority::TOPPLANT_ONLY_PUMPKIN);
+				aPumpkinPlant = GetTopPlantAt(aCol, aGridY, PlantPriority::TOPPLANT_ONLY_PUMPKIN);
 				if (aPumpkinPlant && aPumpkinPlant->mSeedType == SeedType::SEED_PUMPKINSHELL)
 				{
 					aPumpkinPlant->Die();
 				}
 			}
-			AddPlant(aGridX, aRow, mCursorObject->mType, mCursorObject->mImitaterType);
+			AddPlant(aCol, aGridY, mCursorObject->mType, mCursorObject->mImitaterType);
 		}
 	}
 
@@ -4840,7 +4883,7 @@ void Board::SpawnZombiesFromPool()
 		{
 			aGridArray[aGridArrayCount].mX = aGridX;
 			aGridArray[aGridArrayCount].mY = aGridY;
-			aGridArray[aGridArrayCount].mWeight = 10000;
+			aGridArray[aGridArrayCount].mWeight = (mApp->mGameMode == GameMode::GAMEMODE_CHALLENGE_INVISIGHOUL && aGridArray[aGridArrayCount].mY == 3) ? 0 : 10000;
 			aGridArrayCount++;
 			PVZP_ASSERT(aGridArrayCount <= MAX_POOL_GRID_SIZE);
 		}

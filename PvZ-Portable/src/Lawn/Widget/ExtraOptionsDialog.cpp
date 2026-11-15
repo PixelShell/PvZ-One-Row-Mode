@@ -8,12 +8,13 @@
 #include "../../Resources.h"
 #include "ExtraOptionsDialog.h"
 #include "../../ConstEnums.h"
+#include "graphics/Color.h"
 #include "widget/Checkbox.h"
 
 using namespace Sexy;
 
 ExtraOptionsDialog::ExtraOptionsDialog(LawnApp* theApp, bool theFromGameSelector) :
-	Dialog(nullptr, nullptr, Dialogs::DIALOG_NEWOPTIONS, true, "Options", "", "", Dialog::BUTTONS_NONE)
+	Dialog(nullptr, nullptr, Dialogs::DIALOG_EXTRAOPTIONS, true, "Options", "", "", Dialog::BUTTONS_NONE)
 {
 	mApp = theApp;
 	mFromGameSelector = theFromGameSelector;
@@ -22,6 +23,7 @@ ExtraOptionsDialog::ExtraOptionsDialog(LawnApp* theApp, bool theFromGameSelector
 	mDebugCheckbox = MakeNewCheckbox(ExtraOptionsDialog::ExtraOptionsDialog_Debug, this, theApp->mDebugKeysEnabled);
 	mAutoCollectionCheckbox = MakeNewCheckbox(ExtraOptionsDialog::ExtraOptionsDialog_AutoCollect, this, theApp->mAutoCollect);
 	mHealthbarCheckbox = MakeNewCheckbox(ExtraOptionsDialog::ExtraOptionsDialog_Healthbar, this, theApp->mHealthbarEnabled);
+
 	mBackButton = MakeNewButton(
 		ExtraOptionsDialog::ExtraOptionsDialog_Back,
 		this,
@@ -31,6 +33,8 @@ ExtraOptionsDialog::ExtraOptionsDialog(LawnApp* theApp, bool theFromGameSelector
 		IMAGE_OPTIONS_BACKTOGAMEBUTTON0,
 		IMAGE_OPTIONS_BACKTOGAMEBUTTON2
 	);
+	mMoneyButton = MakeButton(ExtraOptionsDialog::ExtraOptionsDialog_Money, this, "[MONEY_BUTTON]");
+
 	mBackButton->mTranslateX = 0;
 	mBackButton->mTranslateY = 0;
 	mBackButton->mTextOffsetX = -2;
@@ -50,6 +54,7 @@ ExtraOptionsDialog::~ExtraOptionsDialog()
 	delete mDebugCheckbox;
 	delete mAutoCollectionCheckbox;
 	delete mHealthbarCheckbox;
+	delete mMoneyButton;
 }
 
 int ExtraOptionsDialog::GetPreferredHeight(int theWidth)
@@ -65,6 +70,7 @@ void ExtraOptionsDialog::AddedToManager(Sexy::WidgetManager* theWidgetManager)
 	AddWidget(mDebugCheckbox);
 	AddWidget(mAutoCollectionCheckbox);
 	AddWidget(mHealthbarCheckbox);
+	AddWidget(mMoneyButton);
 }
 
 void ExtraOptionsDialog::RemovedFromManager(Sexy::WidgetManager* theWidgetManager)
@@ -74,14 +80,18 @@ void ExtraOptionsDialog::RemovedFromManager(Sexy::WidgetManager* theWidgetManage
 	RemoveWidget(mDebugCheckbox);
 	RemoveWidget(mAutoCollectionCheckbox);
 	RemoveWidget(mHealthbarCheckbox);
+	RemoveWidget(mMoneyButton);
 }
 
 void ExtraOptionsDialog::Resize(int theX, int theY, int theWidth, int theHeight)
 {
 	Dialog::Resize(theX, theY, theWidth, theHeight);
-	mDebugCheckbox->Resize(100, 186, 135, 40);
+	mDebugCheckbox->Resize(100, 136, 135, 40);
 	mAutoCollectionCheckbox->Resize(mDebugCheckbox->mX, mDebugCheckbox->mY + 45, 135, 40);
 	mHealthbarCheckbox->Resize(mDebugCheckbox->mX, mAutoCollectionCheckbox->mY + 45, 135, 40);
+
+	mMoneyButton->Resize(107, mHealthbarCheckbox->mY + 45, 209, 46);
+
 	mBackButton->Resize(30, 381, mBackButton->mWidth, mBackButton->mHeight);
 }
 
@@ -159,6 +169,9 @@ void ExtraOptionsDialog::ButtonDepress(int theId)
 	case (ExtraOptionsDialog::ExtraOptionsDialog_Back):
 		mApp->KillDialog(Dialogs::DIALOG_EXTRAOPTIONS);
 		mApp->DoNewOptions(mFromGameSelector);
+		break;
+	case (ExtraOptionsDialog::ExtraOptionsDialog_Money):
+		mApp->mPlayerInfo->AddCoins(99999);
 		break;
 	}
 }

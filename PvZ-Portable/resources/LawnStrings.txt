@@ -6,3 +6,9 @@ Ex
 
 [BACK]
 Back
+
+[COLUMN_AS_YOU_SEE_EM]
+Row Like You See 'Em
+
+[MONEY_BUTTON]
+Set Max Money

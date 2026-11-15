@@ -4775,8 +4775,8 @@ void Zombie::UpdateYuckyFace()
 
 		bool aCanGoUp = true;
 		bool aCanGoDown = true;
-		bool aIsPool = mBoard->mPlantRow[mRow] == PlantRowType::PLANTROW_POOL;
-		if (!mBoard->RowCanHaveZombies(mRow - 1))
+		/*bool aIsPool = mBoard->mPlantRow[mRow] == PlantRowType::PLANTROW_POOL;
+		if (!mBoard->RowCanHaveZombies(mRow - 1) true)
 		{
 			aCanGoUp = false;
 		}
@@ -4816,7 +4816,8 @@ void Zombie::UpdateYuckyFace()
 		else
 		{
 			PVZP_ASSERT(false);
-		}
+		}*/
+		SetRow((Rand(2) == 0) ? (mRow + 1) : (mRow - 1));
 	}
 }
 
